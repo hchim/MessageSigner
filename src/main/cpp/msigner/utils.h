@@ -1,11 +1,13 @@
 #ifndef MESSAGESIGNER_UTILS_H
 #define MESSAGESIGNER_UTILS_H
 
-#include <sha.h>
+/*
+ * Generate the SHA256 digest.
+ */
+void SHA256_digest(const uint8_t * data, int len, char digest[65]);
 
 /*
- * Generate the SHA256 signature.
+ * Generate the MD5 digest.
  */
-void SHA256_digest(const char * data, int len, char signature[SHA256_CBLOCK + 1]);
-
+void MD5_digest(const uint8_t * data, int len, char digest[33]);
 #endif //MESSAGESIGNER_UTILS_H

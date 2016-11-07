@@ -45,8 +45,6 @@
 *每项的保存形式为{tag，length，content}
 */
 
-#include "pkcs7.h"
-
 #define TAG "pkcs7"
 
 /**
@@ -466,7 +464,7 @@ char *pkcs7::get_SHA256()
         return NULL;
     }
 
-    SHA256_digest((const char*) (m_content + p_cert->begin - offset), p_cert->len + offset, ret_sha256);
+    SHA256_digest((const uint8_t *) (m_content + p_cert->begin - offset), p_cert->len + offset, ret_sha256);
 
     return ret_sha256;
 }

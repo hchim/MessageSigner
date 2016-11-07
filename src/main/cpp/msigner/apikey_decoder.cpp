@@ -7,10 +7,12 @@
 #include "package_utils.h"
 #include "apikey_decoder.h"
 #include "jni_log.h"
-
+#include "utils.h"
 #include "pkcs7.h"
 
 #define TAG "APIKeyDecoder"
+// replace with the md5 digest of the apikey signature part
+#define APIKEY_SIG_MD5 "253f7ff0af38b72cdb34c02d9c32eb44"
 
 using namespace std;
 
@@ -27,7 +29,7 @@ int generate_public_key_signature(char* apk_path, char* cert_file, char* signatu
         }
         return 0;
     }
-    LOGD(TAG, "len %d\n", len);
+
     pkcs7 cert;
     cert.set_content(cert_buff, len);
 
@@ -43,6 +45,7 @@ int generate_public_key_signature(char* apk_path, char* cert_file, char* signatu
 int read_api_key(char* apk_path, APIKey* apiKey) {
     uint8_t * key_buff;
     size_t len = read_file_from_apk(apk_path, "assets/apikey", &key_buff);
+    key_buff[len] = '\0';
 
     if (len < 0) {
         if (key_buff != NULL) {
@@ -76,12 +79,19 @@ int verify_api_key() {
         return 0;
     }
 
-    LOGD(TAG, "sig: %s signature: %s\n", signature, apiKey_obj.signature);
+    //TODO use the X.509 certificate to verify the signature
+    char MD5[33] = {0};
+    int len = strlen(apiKey_obj.apikey_signature);
+    MD5_digest((const uint8_t *) apiKey_obj.apikey_signature, len, MD5);
+
     if (strcmp(apiKey_obj.package_name, package_name) != 0
-        || strcmp(apiKey_obj.signature, signature) != 0) {
+        || strcmp(apiKey_obj.signature, signature) != 0
+        || strcmp(MD5, APIKEY_SIG_MD5) != 0) {
+        LOGD(TAG, "sig: %s signature: %s\n", signature, apiKey_obj.signature);
+        LOGD(TAG, "pn: %s package_name: %s\n", package_name, apiKey_obj.package_name);
+        LOGD(TAG, "apisig: %s apikey_signature: %s\n", APIKEY_SIG_MD5, MD5);
         return 0;
     }
-    //TODO verify apikey signature
 
     return 1;
 }
@@ -141,7 +151,7 @@ int decode_api_key(const char * str, APIKey* apiKey) {
         strncpy(apiKey->signature, str_obj, strlen(str_obj) + 1);
     }
 
-    strncpy(apiKey->apikey_signature, p, strlen(p));
+    strncpy(apiKey->apikey_signature, p, strlen(p) + 1);
 
     return 1;
 }
