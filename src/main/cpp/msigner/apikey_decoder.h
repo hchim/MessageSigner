@@ -17,6 +17,6 @@ int decode_api_key(const char* json, APIKey* apiKey);
 /*
  * Verify API key.
  */
-int verify_api_key();
+int verify_api_key(char * key);
 
 #endif //MESSAGESIGNER_APIKEY_DECODER_H

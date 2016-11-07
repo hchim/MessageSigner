@@ -13,6 +13,7 @@
 #define TAG "APIKeyDecoder"
 // replace with the md5 digest of the apikey signature part
 #define APIKEY_SIG_MD5 "253f7ff0af38b72cdb34c02d9c32eb44"
+#define MAGIC_WORD "HCH"
 
 using namespace std;
 
@@ -64,7 +65,7 @@ int read_api_key(char* apk_path, APIKey* apiKey) {
     return 1;
 }
 
-int verify_api_key() {
+int verify_api_key(char * key) {
     char package_name[256] = {0};
     char apk_path[1024] = {0};
     char cert_file[256] = {0};
@@ -92,6 +93,17 @@ int verify_api_key() {
         LOGD(TAG, "apisig: %s apikey_signature: %s\n", APIKEY_SIG_MD5, MD5);
         return 0;
     }
+
+    //prepare key
+    len = strlen(package_name);
+    strncpy(key, package_name, len);
+    strncpy(key + len, MAGIC_WORD, 3);
+    len += 3;
+    strncpy(key + len, signature, 64);
+    len += 64;
+    strncpy(key + len, MD5, 32);
+    len += 32;
+    key[len] = '\0';
 
     return 1;
 }
