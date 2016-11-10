@@ -105,13 +105,16 @@ int read_file_from_apk(char* apk_path, char* filename, uint8_t ** read_buf) {
 
     struct zip_stat fstat;
     struct zip_file* file = zip_fopen(apk_file, filename, 0);
+
     if (file != NULL) {
-        zip_stat(apk_file, filename, 0, &fstat);
+        if (zip_stat(apk_file, filename, 0, &fstat) != 0) {
+            LOGD(TAG, "Failed to get file information: %s\n", filename);
+            return -1;
+        }
     } else {
         LOGD(TAG, "Failed to open zip file: %s\n", filename);
         return -1;
     }
-
     *read_buf = (uint8_t *) malloc(fstat.size + 1);
 
     if (*read_buf == NULL) {

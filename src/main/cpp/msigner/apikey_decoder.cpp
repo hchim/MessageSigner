@@ -10,9 +10,11 @@
 #include "utils.h"
 #include "pkcs7.h"
 
-#define TAG "APIKeyDecoder"
+#define TAG "apikey_decoder"
 // replace with the md5 digest of the apikey signature part
-#define APIKEY_SIG_MD5 "253f7ff0af38b72cdb34c02d9c32eb44"
+//MessageSignerTest
+//#define APIKEY_SIG_MD5 "253f7ff0af38b72cdb34c02d9c32eb44"
+#define APIKEY_SIG_MD5 "b8f68f4c41be215f7c1e3e33f58a3590"
 #define MAGIC_WORD "HCH"
 
 using namespace std;
@@ -44,17 +46,17 @@ int generate_public_key_signature(char* apk_path, char* cert_file, char* signatu
 }
 
 int read_api_key(char* apk_path, APIKey* apiKey) {
-    uint8_t * key_buff;
-    size_t len = read_file_from_apk(apk_path, "assets/apikey", &key_buff);
-    key_buff[len] = '\0';
+    uint8_t * key_buff = NULL;
+    int len = read_file_from_apk(apk_path, "assets/apikey", &key_buff);
 
-    if (len < 0) {
+    if (len <= 0) {
         if (key_buff != NULL) {
             free(key_buff);
         }
         return 0;
     }
 
+    key_buff[len] = '\0';
     // decode apikey
     if (!decode_api_key((char*) key_buff, apiKey)) {
         free(key_buff);
@@ -119,6 +121,10 @@ const char* read_string(json_object * jobj, const char* key) {
 }
 
 int decode_api_key(const char * str, APIKey* apiKey) {
+    if (str == NULL) {
+        return 0;
+    }
+
     char* p = strstr(str, ".");
     if (p == NULL) {
         LOGD(TAG, "Failed to decode api key: %s\n", str);
