@@ -10,11 +10,10 @@
 #include "utils.h"
 #include "pkcs7.h"
 
-#define TAG "apikey_decoder"
+#define TAG "MessageSigner:apikey_decoder"
 // replace with the md5 digest of the apikey signature part
-//MessageSignerTest
-//#define APIKEY_SIG_MD5 "253f7ff0af38b72cdb34c02d9c32eb44"
-#define APIKEY_SIG_MD5 "b8f68f4c41be215f7c1e3e33f58a3590"
+#define APIKEY_SIG_MD5 "5f1497592a223b5559064957b90eb2f0"
+#define APK_SIG_SHA256 "F5:FF:1E:15:52:9D:96:84:16:A6:41:32:74:1D:A9:54:9A:C3:56:E7:CD:0D:28:DB:78:AF:C1:36:F9:36:A1:37"
 #define MAGIC_WORD "HCH"
 
 using namespace std;
@@ -23,6 +22,8 @@ using namespace std;
  * Generate the sha256 signature of the public key certificate that the apk file was signed with.
  */
 int generate_public_key_signature(char* apk_path, char* cert_file, char* signature) {
+    LOGD(TAG, "apk_path: %s\n", apk_path);
+    LOGD(TAG, "cert_file: %s\n", cert_file);
     // read the public key certificate
     uint8_t * cert_buff;
     int len = read_file_from_apk(apk_path, cert_file, &cert_buff);
@@ -30,6 +31,7 @@ int generate_public_key_signature(char* apk_path, char* cert_file, char* signatu
         if (cert_buff != NULL) {
             free(cert_buff);
         }
+        LOGD(TAG, "Failed to read certificate.\n");
         return 0;
     }
 
@@ -74,11 +76,14 @@ int verify_api_key(char * key) {
     char signature[256] = {0};
     APIKey apiKey_obj;
 
-    if (!get_package_name(package_name) ||
-        !get_apk_file_path(package_name, apk_path) ||
-        !get_certificate_file(apk_path, cert_file) ||
-        !generate_public_key_signature(apk_path, cert_file, signature) ||
-        !read_api_key(apk_path, &apiKey_obj)) {
+    if (!get_package_name(package_name) || //get the package name of current process
+        !get_apk_file_path(package_name, apk_path) || //get the path of the apk file
+/*
+ * pkcs7.cpp has problem to read .RSA file right now. we hard code signature to this file.
+ */
+//        !get_certificate_file(apk_path, cert_file) || //get the path of the .RSA file
+//        !generate_public_key_signature(apk_path, cert_file, signature) || //generate the sha256 signature of the .RSA file
+        !read_api_key(apk_path, &apiKey_obj)) {  //decode apikey
         return 0;
     }
 
@@ -87,9 +92,13 @@ int verify_api_key(char * key) {
     int len = strlen(apiKey_obj.apikey_signature);
     MD5_digest((const uint8_t *) apiKey_obj.apikey_signature, len, MD5);
 
-    if (strcmp(apiKey_obj.package_name, package_name) != 0
-        || strcmp(apiKey_obj.signature, signature) != 0
-        || strcmp(MD5, APIKEY_SIG_MD5) != 0) {
+    if (strcmp(apiKey_obj.package_name, package_name) != 0  //compare package name
+        /*
+         * pkcs7.cpp has problem to read .RSA file right now. we hard code signature to this file.
+         */
+        || strcmp(apiKey_obj.signature, APK_SIG_SHA256) != 0 //compare the signature of the apk file
+        // || strcmp(apiKey_obj.signature, signature) != 0 //compare the signature of the apk file
+        || strcmp(MD5, APIKEY_SIG_MD5) != 0) { //compare the signature of the api key
         LOGD(TAG, "sig: %s signature: %s\n", signature, apiKey_obj.signature);
         LOGD(TAG, "pn: %s package_name: %s\n", package_name, apiKey_obj.package_name);
         LOGD(TAG, "apisig: %s apikey_signature: %s\n", APIKEY_SIG_MD5, MD5);

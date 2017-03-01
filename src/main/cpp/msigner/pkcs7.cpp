@@ -45,7 +45,7 @@
 *每项的保存形式为{tag，length，content}
 */
 
-#define TAG "pkcs7"
+#define TAG "MessageSigner:pkcs7"
 
 /**
  * 构造函数，必须提供签名证书文件或者apk文件
@@ -60,6 +60,7 @@ pkcs7::pkcs7()
 
 void pkcs7::set_content(const unsigned char * content, int len)
 {
+    LOGD(TAG, "Content length: %d\n", len);
     m_content = (unsigned char *)malloc(sizeof(unsigned char) * m_length);
     memcpy(m_content, content, len);
     m_length = len;
@@ -67,7 +68,7 @@ void pkcs7::set_content(const unsigned char * content, int len)
     if (!parseResult) {
         LOGD(TAG, "Failed to parse pkcs7 file\n");
     }
- }
+}
 
 pkcs7::~pkcs7()
 {

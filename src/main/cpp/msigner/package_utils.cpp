@@ -10,7 +10,7 @@
 using std::ifstream;
 using std::size_t;
 
-#define TAG "package_utils"
+#define TAG "MessageSigner:package_utils"
 
 zip* apk_file = NULL;
 
