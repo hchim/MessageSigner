@@ -110,8 +110,8 @@ int verify_api_key(char * key) {
     strncpy(key, package_name, len);
     strncpy(key + len, MAGIC_WORD, 3);
     len += 3;
-    strncpy(key + len, signature, 64);
-    len += 64;
+    strncpy(key + len, APK_SIG_SHA256, 95);
+    len += 95;
     strncpy(key + len, MD5, 32);
     len += 32;
     key[len] = '\0';

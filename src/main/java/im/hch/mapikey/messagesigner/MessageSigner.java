@@ -1,5 +1,12 @@
 package im.hch.mapikey.messagesigner;
 
+import android.net.Uri;
+import android.util.Base64;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class MessageSigner {
@@ -50,14 +57,18 @@ public class MessageSigner {
     private String requestDigest(String method, String url, String body, Map<String, String> headers) {
         StringBuffer buffer = new StringBuffer();
         buffer.append(method);
-        buffer.append(url);
+        buffer.append(getUri(url));
 
         if (body != null) {
             buffer.append(body);
         }
 
         if (headers != null && headers.size() > 0) {
-            for (String key : headers.keySet()) {
+            List<String> list = new ArrayList();
+            list.addAll(headers.keySet());
+            Collections.sort(list);
+
+            for (String key : list) {
                 buffer.append(key);
                 buffer.append(headers.get(key));
             }
@@ -66,12 +77,33 @@ public class MessageSigner {
         return HashUtils.generateSHA256Hash(buffer.toString());
     }
 
+    private String getUri(String url) {
+        if (url.startsWith("http")) {
+            Uri uri = Uri.parse(url);
+            return uri.getPath();
+        }
+        return url;
+    }
+
     public String signMessage(String message) {
         if (message == null) {
             return null;
         }
 
         return nativeSignMessage(message);
+    }
+
+    public String encodeMessage(String message) {
+        return Base64.encodeToString(message.getBytes(), Base64.DEFAULT);
+    }
+
+    public String decodeMessage(String message) {
+        byte[] decoded = Base64.decode(message.getBytes(), Base64.DEFAULT);
+        try {
+            return new String(decoded, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return "";
+        }
     }
 
     /**
