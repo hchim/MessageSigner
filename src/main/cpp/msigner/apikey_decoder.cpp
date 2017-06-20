@@ -12,8 +12,8 @@
 
 #define TAG "MessageSigner:apikey_decoder"
 // replace with the md5 digest of the apikey signature part
-#define APIKEY_SIG_MD5 "87d8072f69ae49852b3486a9f2dc82c8"
-#define APK_SIG_SHA256 "B1:72:99:D8:C2:11:AA:71:9E:83:D7:E3:CC:03:05:94:DE:EB:20:67:2F:57:87:E3:CD:C1:8D:D0:69:45:EA:5B"
+#define APIKEY_SIG_MD5 "e9238748e4d683aa59994d08069a2226"
+#define APK_SIG_SHA256 "10:6D:E4:D0:11:EF:86:C8:90:FC:1A:FE:9E:32:8B:88:72:BA:8F:F7:A2:82:EE:D5:8D:49:1E:6A:D6:82:6E:BC"
 #define MAGIC_WORD "HCH"
 
 using namespace std;
